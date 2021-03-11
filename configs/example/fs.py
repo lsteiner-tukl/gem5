@@ -129,8 +129,12 @@ def build_test_system(np):
     elif options.kernel is not None:
         test_sys.workload.object_file = binary(options.kernel)
 
-    if options.script is not None:
-        test_sys.readfile = options.script
+    if options.dual:
+        if options.serverbench is not None:
+            test_sys.readfile = options.serverbench
+    else:
+        if options.script is not None:
+            test_sys.readfile = options.script
 
     if options.lpae:
         test_sys.have_lpae = True
@@ -239,7 +243,8 @@ def build_drive_system(np):
                                        cmdline=cmdline)
     elif buildEnv['TARGET_ISA'] == 'arm':
         drive_sys = makeArmSystem(drive_mem_mode, options.machine_type, np,
-                                  bm[1], options.dtb_filename, cmdline=cmdline)
+                                  bm[1], options.dtb_filename, cmdline=cmdline,
+                                  bootloader=options.bootloader)
 
     # Create a top-level voltage domain
     drive_sys.voltage_domain = VoltageDomain(voltage = options.sys_voltage)
@@ -255,6 +260,9 @@ def build_drive_system(np):
     drive_sys.cpu_clk_domain = SrcClockDomain(clock = options.cpu_clock,
                                               voltage_domain =
                                               drive_sys.cpu_voltage_domain)
+
+    if options.clientbench is not None:
+        drive_sys.readfile = options.clientbench
 
     drive_sys.cpu = DriveCPUClass(clk_domain=drive_sys.cpu_clk_domain,
                                   cpu_id=0)

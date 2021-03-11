@@ -219,6 +219,10 @@ def makeArmSystem(mem_mode, machine_type, num_cpus=1, mdesc=None,
         self.pci_ide = IdeController(disks=disks)
         pci_devices.append(self.pci_ide)
 
+    self.ethernet = IGbE_e1000(pci_bus=0, pci_dev=0, pci_func=0,
+                               InterruptLine=1, InterruptPin=1)
+    pci_devices.append(self.ethernet)
+
     self.mem_ranges = []
     size_remain = int(Addr(mdesc.mem()))
     for region in self.realview._mem_regions:
@@ -439,6 +443,11 @@ def connectX86ClassicSystem(x86_sys, numCPUs):
 
     x86_sys.system_port = x86_sys.membus.slave
 
+    x86_sys.ethernet.pio = x86_sys.iobus.master
+    x86_sys.ethernet.dma = x86_sys.iobus.slave
+    x86_sys.ethernet.host = x86_sys.pc.pci_host
+
+
 def connectX86RubySystem(x86_sys):
     # North Bridge
     x86_sys.iobus = IOXBar()
@@ -481,6 +490,8 @@ def makeX86System(mem_mode, numCPUs=1, mdesc=None, workload=None, Ruby=False):
 
     # Platform
     self.pc = Pc()
+    self.ethernet = IGbE_e1000(pci_bus=0, pci_dev=0, pci_func=0,
+                        InterruptLine=1, InterruptPin=1)
 
     # Create and connect the busses required by each memory system
     if Ruby:
@@ -641,13 +652,14 @@ def makeDualRoot(full_system, testSystem, driveSystem, dumpfile):
     self.etherlink = EtherLink()
 
     if hasattr(testSystem, 'realview'):
-        self.etherlink.int0 = Parent.testsys.realview.ethernet.interface
-        self.etherlink.int1 = Parent.drivesys.realview.ethernet.interface
+        self.etherlink.int0 = Parent.testsys.ethernet.interface
+        self.etherlink.int1 = Parent.drivesys.ethernet.interface
     elif hasattr(testSystem, 'tsunami'):
         self.etherlink.int0 = Parent.testsys.tsunami.ethernet.interface
         self.etherlink.int1 = Parent.drivesys.tsunami.ethernet.interface
     else:
-        fatal("Don't know how to connect these system together")
+        self.etherlink.int0 = Parent.testsys.ethernet.interface
+        self.etherlink.int1 = Parent.drivesys.ethernet.interface
 
     if dumpfile:
         self.etherdump = EtherDump(file=dumpfile)

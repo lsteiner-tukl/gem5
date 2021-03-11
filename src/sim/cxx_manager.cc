@@ -537,12 +537,31 @@ CxxConfigManager::bindObjectPorts(SimObject *object)
         DPRINTF(CxxConfig, "Binding port: %s.%s\n", instance_name,
             port->name);
 
+        bool specialPort = false;
+        if ((instance_name.find("pc.south_bridge.cmos") != std::string::npos
+          && strcmp(port->name.c_str(), "int_pin") == 0)
+          || (instance_name.find("pc.south_bridge.keyboard")
+          != std::string::npos
+          && strcmp(port->name.c_str(), "keyboard_int_pin") == 0)
+          || (instance_name.find("pc.south_bridge.keyboard")
+          != std::string::npos
+          && strcmp(port->name.c_str(), "mouse_int_pin") == 0)
+          || (instance_name.find("pc.south_bridge.pic1") != std::string::npos
+          && strcmp(port->name.c_str(), "output") == 0)
+          || (instance_name.find("pc.south_bridge.pic2") != std::string::npos
+          && strcmp(port->name.c_str(), "output") == 0)
+          || (instance_name.find("pc.south_bridge.pit") != std::string::npos
+          && strcmp(port->name.c_str(), "int_pin") == 0))
+        {
+            specialPort = true;
+        }
+
         std::vector<std::string> peers;
         configFile.getPortPeers(object_name, port->name, peers);
 
         /* Only handle master ports as binding only needs to happen once
          *  for each observed pair of ports */
-        if (port->isRequestor) {
+        if (port->isRequestor || specialPort) {
             if (!port->isVector && peers.size() > 1) {
                 throw Exception(instance_name, csprintf(
                     "Too many connections to non-vector port %s (%d)\n",

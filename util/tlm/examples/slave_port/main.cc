@@ -64,14 +64,14 @@ sc_main(int argc, char **argv)
 
     unsigned long long int memorySize = 512*1024*1024ULL;
 
-    Gem5SystemC::Gem5SlaveTransactor transactor("transactor", "transactor");
+    //Gem5SystemC::Gem5SlaveTransactor transactor("transactor", "transactor");
     Target memory("memory",
                   parser.getVerboseFlag(),
                   memorySize,
                   parser.getMemoryOffset());
 
-    memory.socket.bind(transactor.socket);
-    transactor.sim_control.bind(sim_control);
+    //memory.socket.bind(transactor.socket);
+    //transactor.sim_control.bind(sim_control);
 
     SC_REPORT_INFO("sc_main", "Start of Simulation");
 

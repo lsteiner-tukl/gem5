@@ -128,8 +128,10 @@ Info::setName(const Group *parent, const std::string &name)
         auto p = nameMap().insert(make_pair(name, this));
 
         if (!p.second)
-            panic("same statistic name used twice! name=%s\n",
-                  name);
+            //panic("same statistic name used twice! name=%s\n",
+            //      name);
+            std::cout << "same statistic name used twice! name="
+                      << name << std::endl;
     }
 
     this->name = name;
