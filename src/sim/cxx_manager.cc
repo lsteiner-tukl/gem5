@@ -551,7 +551,10 @@ CxxConfigManager::bindObjectPorts(SimObject *object)
           || (instance_name.find("pc.south_bridge.pic2") != std::string::npos
           && strcmp(port->name.c_str(), "output") == 0)
           || (instance_name.find("pc.south_bridge.pit") != std::string::npos
-          && strcmp(port->name.c_str(), "int_pin") == 0))
+          && strcmp(port->name.c_str(), "int_pin") == 0)
+          || (instance_name.find("ethernet") != std::string::npos
+          && strcmp(port->name.c_str(), "interface") == 0)
+          || instance_name.find("etherlink") != std::string::npos)
         {
             specialPort = true;
         }

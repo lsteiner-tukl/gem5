@@ -111,7 +111,7 @@ def parse_options():
 
     # Statistics options
     group("Statistics Options")
-    option("--stats-file", metavar="FILE", default="stats.txt",
+    option("--stats-file", metavar="FILE", default="statsss.txt",
         help="Sets the output file for statistics [Default: %default]")
     option("--stats-help",
            action="callback", callback=_stats_help,

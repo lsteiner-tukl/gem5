@@ -452,6 +452,8 @@ MemCtrl::recvTimingReq(PacketPtr pkt)
                                     nvm->bytesPerBurst();
     unsigned offset = pkt->getAddr() & (burst_size - 1);
     unsigned int pkt_count = divCeil(offset + size, burst_size);
+    if (pkt_count > 1)
+        std::cout << "!!!! Packet > 1" << std::endl;
 
     // run the QoS scheduler and assign a QoS priority value to the packet
     qosSchedule( { &readQueue, &writeQueue }, burst_size, pkt);
