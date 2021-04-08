@@ -44,6 +44,7 @@ int TraceCPU::numTraceCPUs = 0;
 
 TraceCPU::TraceCPU(const TraceCPUParams &params)
     :   BaseCPU(params),
+        addressOffset(TraceCPU::numTraceCPUs * 8589934592),
         icachePort(this),
         dcachePort(this),
         instRequestorID(params.system->getRequestorId(this, "inst")),
@@ -62,6 +63,7 @@ TraceCPU::TraceCPU(const TraceCPUParams &params)
         progressMsgInterval(params.progressMsgInterval),
         progressMsgThreshold(params.progressMsgInterval), traceStats(this)
 {
+    //addressOffset = 8589934592;
     // Increment static counter for number of Trace CPUs.
     ++TraceCPU::numTraceCPUs;
 
@@ -1183,11 +1185,15 @@ TraceCPU::DcachePort::recvReqRetry()
 }
 
 TraceCPU::ElasticDataGen::InputStream::InputStream(
-        const std::string& filename, const double time_multiplier) :
+        const std::string& filename, const double time_multiplier,
+        uint64_t addressOffset) :
     trace(filename),
     timeMultiplier(time_multiplier),
-    microOpCount(0)
+    microOpCount(0),
+    addressOffset(addressOffset)
 {
+    std::cout << "ElasticDataGen address offset "
+    << addressOffset << std::endl;
     // Create a protobuf message for the header and read it from the stream
     ProtoMessage::InstDepRecordHeader header_msg;
     if (!trace.read(header_msg)) {
@@ -1243,12 +1249,19 @@ TraceCPU::ElasticDataGen::InputStream::read(GraphNode* element)
 
         // Optional fields
         if (pkt_msg.has_p_addr())
-            element->physAddr = pkt_msg.p_addr();
+        {
+            element->physAddr = pkt_msg.p_addr() + addressOffset;
+            // std::cout << "Physical address "
+            // << element->physAddr << std::endl;
+        }
         else
             element->physAddr = 0;
 
         if (pkt_msg.has_v_addr())
+        {
             element->virtAddr = pkt_msg.v_addr();
+            std::cout << "Virtual address " << element->virtAddr << std::endl;
+        }
         else
             element->virtAddr = 0;
 
@@ -1366,9 +1379,11 @@ TraceCPU::ElasticDataGen::GraphNode::typeToStr() const
     return Record::RecordType_Name(type);
 }
 
-TraceCPU::FixedRetryGen::InputStream::InputStream(const std::string& filename)
-    : trace(filename)
+TraceCPU::FixedRetryGen::InputStream::InputStream(const std::string& filename,
+        uint64_t addressOffset)
+    : trace(filename), addressOffset(addressOffset)
 {
+    std::cout << "FixedRetryGen address offset " << addressOffset << std::endl;
     // Create a protobuf message for the header and read it from the stream
     ProtoMessage::PacketHeader header_msg;
     if (!trace.read(header_msg)) {
@@ -1393,7 +1408,8 @@ TraceCPU::FixedRetryGen::InputStream::read(TraceElement* element)
     ProtoMessage::Packet pkt_msg;
     if (trace.read(pkt_msg)) {
         element->cmd = pkt_msg.cmd();
-        element->addr = pkt_msg.addr();
+        element->addr = pkt_msg.addr() + addressOffset;
+        //std::cout << "FixedRetryGen address " << element->addr << std::endl;
         element->blocksize = pkt_msg.size();
         element->tick = pkt_msg.tick();
         element->flags = pkt_msg.has_flags() ? pkt_msg.flags() : 0;

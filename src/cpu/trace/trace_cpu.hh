@@ -141,6 +141,8 @@ class TraceCPU : public BaseCPU
 {
 
   public:
+    uint64_t addressOffset;
+
     TraceCPU(const TraceCPUParams &params);
 
     void init();
@@ -374,6 +376,7 @@ class TraceCPU : public BaseCPU
           private:
             // Input file stream for the protobuf trace
             ProtoInputStream trace;
+            uint64_t addressOffset;
 
           public:
             /**
@@ -381,7 +384,7 @@ class TraceCPU : public BaseCPU
              *
              * @param filename Path to the file to read from
              */
-            InputStream(const std::string& filename);
+            InputStream(const std::string& filename, uint64_t addressOffset);
 
             /**
              * Reset the stream such that it can be played once
@@ -408,7 +411,7 @@ class TraceCPU : public BaseCPU
             owner(_owner),
             port(_port),
             requestorId(requestor_id),
-            trace(trace_file),
+            trace(trace_file, _owner.addressOffset),
             genName(owner.name() + ".fixedretry." + _name),
             retryPkt(nullptr),
             delta(0),
@@ -779,6 +782,8 @@ class TraceCPU : public BaseCPU
              */
             uint32_t windowSize;
 
+            uint64_t addressOffset;
+
           public:
             /**
              * Create a trace input stream for a given file name.
@@ -787,7 +792,7 @@ class TraceCPU : public BaseCPU
              * @param time_multiplier used to scale the compute delays
              */
             InputStream(const std::string& filename,
-                        const double time_multiplier);
+                        const double time_multiplier, uint64_t addressOffset);
 
             /**
              * Reset the stream such that it can be played once
@@ -822,7 +827,8 @@ class TraceCPU : public BaseCPU
             owner(_owner),
             port(_port),
             requestorId(requestor_id),
-            trace(trace_file, 1.0 / params.freqMultiplier),
+            trace(trace_file, 1.0 / params.freqMultiplier,
+                    _owner.addressOffset),
             genName(owner.name() + ".elastic." + _name),
             retryPkt(nullptr),
             traceComplete(false),

@@ -458,7 +458,7 @@ CxxConfigManager::bindPort(
         request_port_name, request_port_index);
     Port &response_port = responder_object->getPort(
         response_port_name, response_port_index);
-
+/*
     if (request_port.isConnected()) {
         throw Exception(requestor_object->name(), csprintf(
             "Request port: %s[%d] is already connected\n", request_port_name,
@@ -470,7 +470,7 @@ CxxConfigManager::bindPort(
             "Response port: %s[%d] is already connected\n", response_port_name,
             response_port_index));
     }
-
+*/
     DPRINTF(CxxConfig, "Binding port %s.%s[%d]"
         " to %s:%s[%d]\n",
         requestor_object->name(), request_port_name, request_port_index,
